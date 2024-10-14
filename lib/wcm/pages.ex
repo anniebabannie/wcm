@@ -17,8 +17,10 @@ defmodule Wcm.Pages do
       [%Page{}, ...]
 
   """
-  def list_pages do
-    Repo.all(Page)
+  def list_pages(chapter_id) do
+    pages = Repo.all(from(p in Page, where: p.chapter_id == ^chapter_id))
+    IO.inspect(pages)
+    Repo.all(from(p in Page, where: p.chapter_id == ^chapter_id))
   end
 
   @doc """
@@ -50,6 +52,7 @@ defmodule Wcm.Pages do
 
   """
   def create_page(attrs \\ %{}) do
+    IO.puts("=============")
     %Page{}
     |> Page.changeset(attrs)
     |> Repo.insert()

@@ -70,6 +70,8 @@ defmodule WcmWeb.Router do
       live "/users/settings", UserSettingsLive, :edit
       live "/users/settings/confirm_email/:token", UserSettingsLive, :confirm_email
 
+      live "/admin/:id", AdminLive, container: { :div, class: "h-screen"}
+
       live "/pages", PageLive.Index, :index
       live "/pages/new", PageLive.Index, :new
       live "/pages/:id/edit", PageLive.Index, :edit

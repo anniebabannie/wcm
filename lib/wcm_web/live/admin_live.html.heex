@@ -1,0 +1,45 @@
+<div class="h-full mx-auto bg-white rounded-md shadow grid w-[1280px] grid-cols-12">
+  <aside class="col-span-3 bg-gray-50">
+    <header>
+      <h1>Peach Boy</h1>
+      <p>A story inspired by Momotaro</p>
+    </header>
+    <ul class="flex flex-col gap-4">
+      <%= for chapter <- @chapters do %>
+        <li>
+          <%= if @editing_chapter_id == chapter.id do %>
+            <.live_component module={WcmWeb.ChapterEditComponent} id={chapter.id} chapter={chapter} />
+          <% else %>
+            <%= if @current_chapter == chapter.id do %>
+              <div class="font-bold"><%= chapter.title %></div>
+            <% else %>
+              <.link class="block" navigate={~p"/admin/#{chapter.id}"}><%= chapter.title %></.link>
+            <% end %>
+            <button phx-click="edit" phx-value-chapter_id={chapter.id}>Edit</button>
+          <% end %>
+        </li>
+      <% end %>
+    </ul>
+    <.form for={@form} phx-submit="submit">
+      <div class="flex gap-2 items-end">
+        <div class="grow">
+          <.input field={@form[:title]} type="text" />
+        </div>
+        <button class="bg-black border-black hover:bg-gray-700 text-white font-bold py-2 px-3 rounded-md">Add</button>
+      </div>
+    </.form>
+  </aside>
+  <main>
+  <div class="grid">
+     <.form for={@page_form} phx-submit="page_submit">
+        <.input field={@page_form[:number]} class="w-[300px]" type="number" />
+        <.input field={@page_form[:img]} class="w-[300px]" type="text" />
+        <button class="bg-black border-black hover:bg-gray-700 text-white font-bold py-2 px-3 rounded-md">Add</button>
+    </.form>
+    <%= for page <- @pages do %>
+    <img src={page.img} alt="">
+    <% end %>
+  </div>
+  </main>
+  
+</div>

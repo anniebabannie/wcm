@@ -1,15 +1,22 @@
-defmodule WcmWeb.ChapterLive.Index do
+defmodule WcmWeb.AdminLive do
   use WcmWeb, :live_view
 
   alias Wcm.Chapters
   alias Wcm.Chapters.Chapter
+  alias Wcm.Pages
+  alias Wcm.Pages.Page
 
-  def mount(_params, _session, socket) do
+  def mount(%{"id" => id_string}, _session, socket) do
     changeset = Chapter.changeset(%Chapter{})
+    page_changeset = Page.changeset(%Page{})
+    id = String.to_integer(id_string)
     socket =
       socket
         |> assign(:chapters, Chapters.list_chapters)
+        |> assign(:pages, Pages.list_pages(id))
         |> assign(:form, to_form(changeset))
+        |> assign(:page_form, to_form(page_changeset))
+        |> assign(:current_chapter, id)
     {:ok, assign(socket, chapters: Chapters.list_chapters, editing_chapter_id: nil)}
   end
 
@@ -20,7 +27,6 @@ defmodule WcmWeb.ChapterLive.Index do
     {:noreply, assign(socket, chapters: chapters, editing_chapter_id: nil)}
   end
 
-  @spec handle_event(<<_::32, _::_*16>>, map(), atom() | map()) :: {:noreply, atom() | map()}
   def handle_event("submit", %{"chapter" => chapter_params}, socket) do
     params = chapter_params
       |> Map.put("user_id", socket.assigns.current_user.id)
@@ -45,4 +51,26 @@ defmodule WcmWeb.ChapterLive.Index do
   def handle_event("edit", %{"chapter_id" => chapter_id}, socket) do
     {:noreply, assign(socket, :editing_chapter_id, String.to_integer(chapter_id))}
   end
+
+  def handle_event("page_submit", %{"page" => page_params}, socket) do
+    params = page_params
+      |> Map.put("chapter_id", socket.assigns.current_chapter)
+
+    case Pages.create_page(params) do
+      {:ok, page} ->
+        socket =
+          socket
+            |> put_flash(:info, "page created successfully.")
+            |> assign(:pages, [page | socket.assigns.pages])
+
+        {:noreply, socket}
+
+      {:error, changeset} ->
+        socket =
+          socket
+            assign(:form, to_form(changeset))
+        {:noreply, socket}
+    end
+  end
+
 end

@@ -6,13 +6,15 @@ defmodule Wcm.Pages.Page do
     field :img, :string
     field :number, :integer
 
+    belongs_to :chapter, Wcm.Chapters.Chapter
+
     timestamps(type: :utc_datetime)
   end
 
   @doc false
-  def changeset(page, attrs) do
+  def changeset(page, attrs \\ %{}) do
     page
-    |> cast(attrs, [:number, :img])
-    |> validate_required([:number, :img])
+    |> cast(attrs, [:number, :img, :chapter_id])
+    |> validate_required([:number, :img, :chapter_id])
   end
 end
