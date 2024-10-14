@@ -1,0 +1,20 @@
+<div>
+  <%= for chapter <- @chapters do %>
+    <div>
+      <%= if @editing_chapter_id == chapter.id do %>
+        <.live_component module={WcmWeb.ChapterEditComponent} id={chapter.id} chapter={chapter} />
+      <% else %>
+        <p><%= chapter.title %></p>
+        <button phx-click="edit" phx-value-chapter_id={chapter.id}>Edit</button>
+      <% end %>
+    </div>
+  <% end %>
+</div>
+<.form for={@form} phx-submit="submit">
+  <div class="flex gap-2 items-end">
+    <div class="grow">
+      <.input field={@form[:title]} type="text" />
+    </div>
+    <button class="bg-black border-black hover:bg-gray-700 text-white font-bold py-2 px-3 rounded-md">Add</button>
+  </div>
+</.form>

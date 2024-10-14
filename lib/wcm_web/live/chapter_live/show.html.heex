@@ -1,0 +1,26 @@
+<.header>
+  Chapter <%= @chapter.id %>
+  <:subtitle>This is a chapter record from your database.</:subtitle>
+  <:actions>
+    <.link patch={~p"/chapters/#{@chapter}/show/edit"} phx-click={JS.push_focus()}>
+      <.button>Edit chapter</.button>
+    </.link>
+  </:actions>
+</.header>
+
+<.list>
+  <:item title="Title"><%= @chapter.title %></:item>
+</.list>
+
+<.back navigate={~p"/chapters"}>Back to chapters</.back>
+
+<.modal :if={@live_action == :edit} id="chapter-modal" show on_cancel={JS.patch(~p"/chapters/#{@chapter}")}>
+  <.live_component
+    module={WcmWeb.ChapterLive.FormComponent}
+    id={@chapter.id}
+    title={@page_title}
+    action={@live_action}
+    chapter={@chapter}
+    patch={~p"/chapters/#{@chapter}"}
+  />
+</.modal>

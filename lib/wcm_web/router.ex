@@ -56,6 +56,7 @@ defmodule WcmWeb.Router do
       live "/users/log_in", UserLoginLive, :new
       live "/users/reset_password", UserForgotPasswordLive, :new
       live "/users/reset_password/:token", UserResetPasswordLive, :edit
+
     end
 
     post "/users/log_in", UserSessionController, :create
@@ -68,6 +69,18 @@ defmodule WcmWeb.Router do
       on_mount: [{WcmWeb.UserAuth, :ensure_authenticated}] do
       live "/users/settings", UserSettingsLive, :edit
       live "/users/settings/confirm_email/:token", UserSettingsLive, :confirm_email
+
+      live "/pages", PageLive.Index, :index
+      live "/pages/new", PageLive.Index, :new
+      live "/pages/:id/edit", PageLive.Index, :edit
+      live "/pages/:id", PageLive.Show, :show
+      live "/pages/:id/show/edit", PageLive.Show, :edi
+
+      live "/chapters", ChapterLive.Index, :index
+      live "/chapters/:id", ChapterLive.Show, :show
+      live "/chapters/new", ChapterLive.Index, :new
+      live "/chapters/:id/edit", ChapterLive.Index, :edit
+      live "/chapters/:id/show/edit", ChapterLive.Show, :edit
     end
   end
 
