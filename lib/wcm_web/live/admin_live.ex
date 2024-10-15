@@ -7,6 +7,7 @@ defmodule WcmWeb.AdminLive do
   alias Wcm.Pages.Page
 
   def mount(%{"id" => id_string}, _session, socket) do
+    Phoenix.PubSub.subscribe(Wcm.PubSub, "page_uploaded")
     changeset = Chapter.changeset(%Chapter{})
     page_changeset = Page.changeset(%Page{})
     id = String.to_integer(id_string)
@@ -25,6 +26,13 @@ defmodule WcmWeb.AdminLive do
     # Refresh the list of chapters after an edit
     chapters = Chapters.list_chapters()
     {:noreply, assign(socket, chapters: chapters, editing_chapter_id: nil)}
+  end
+
+  def handle_info({:page_uploaded, _img}, socket) do
+    IO.puts("Page uploaded")
+    # Refresh the list of pages after an upload
+    pages = Pages.list_pages(socket.assigns.current_chapter)
+    {:noreply, assign(socket, pages: pages)}
   end
 
   def handle_event("submit", %{"chapter" => chapter_params}, socket) do

@@ -7,12 +7,11 @@ defmodule WcmWeb.UploadLive do
 
   @impl Phoenix.LiveView
   @spec mount(any(), any(), map()) :: {:ok, Phoenix.LiveView.Socket.t()}
-  def mount(_params, _session, socket) do
-    # IO.inspect(socket.assigns[:current_chapter])
+  def mount(_params, %{"current_chapter" => current_chapter}, socket) do
     {:ok,
     socket
     |> assign(:uploaded_files, [])
-    |> assign(:current_chapter, 2)
+    |> assign(:current_chapter, current_chapter)
     |> allow_upload(:avatar, accept: ~w(.jpg .jpeg .png .webp), max_entries: 2)}
   end
 
@@ -28,13 +27,11 @@ defmodule WcmWeb.UploadLive do
   end
 
   @impl Phoenix.LiveView
-  def handle_event("save", _params, socket) do
-    IO.inspect(socket.assigns[:current_chapter])
+  def handle_event("save", params, socket) do
     uploaded_files =
       consume_uploaded_entries(socket, :avatar, fn %{path: path}, entry ->
-        mime_type = entry.client_type
         {:ok, contents} = File.read(path)
-        IO.inspect(mime_type)
+        mime_type = entry.client_type
         extension =
           case mime_type do
             "image/jpeg" -> ".jpg"
@@ -43,18 +40,13 @@ defmodule WcmWeb.UploadLive do
             "image/webp" -> ".webp"
             _ -> ""
           end
-        IO.puts("Uploading....")
+
         img = "https://fly.storage.tigris.dev/wcm-dev/" <> Path.basename(path) <> extension
-        IO.inspect(img)
         S3.put_object("wcm-dev", Path.basename(path) <> extension, contents, content_type: entry.client_type) |> ExAws.request!
 
         case Pages.create_page(%{ img: img, chapter_id: socket.assigns[:current_chapter], number: 2}) do
           {:ok, _} ->
-            socket =
-              socket
-                |> put_flash(:info, "page created successfully.")
-
-            # {:noreply, socket}
+            Phoenix.PubSub.broadcast(Wcm.PubSub, "page_uploaded", {:page_uploaded, img})
             {:ok, socket}
 
           {:error, changeset} ->
@@ -63,6 +55,7 @@ defmodule WcmWeb.UploadLive do
                 assign(:form, to_form(changeset))
             {:noreply, socket}
         end
+
 
       end)
 
