@@ -29,15 +29,21 @@
       </div>
     </.form>
   </aside>
-  <main>
-  <div class="grid">
-     <.form for={@page_form} phx-submit="page_submit">
+  <main class="col-span-9">
+  <div class="grid grid-cols-4 gap-4 mx-auto w-4/5">
+    <div>
+      <%= live_render(@socket, WcmWeb.UploadLive, id: :upload_live) %>
+      <%!-- <.form for={@page_form} phx-submit="page_submit">
         <.input field={@page_form[:number]} class="w-[300px]" type="number" />
         <.input field={@page_form[:img]} class="w-[300px]" type="text" />
         <button class="bg-black border-black hover:bg-gray-700 text-white font-bold py-2 px-3 rounded-md">Add</button>
-    </.form>
+      </.form> --%>
+    </div>
     <%= for page <- @pages do %>
-    <img src={page.img} alt="">
+      <div>
+        <img src={page.img} alt="">
+        <div><%= page.number %></div>
+      </div>
     <% end %>
   </div>
   </main>
