@@ -1,8 +1,10 @@
 <%!-- lib/my_app_web/live/upload_live.html.heex --%>
 
-<form id="upload-form" phx-submit="save" phx-change="validate">
+<form id="upload-form" phx-submit="save" phx-change="validate" class="flex flex-col gap-3">
+  <label for="next_page_number">Page Number:</label>
+  <input type="text" name="next_page_number" id="next_page_number" value={@next_page_number} />
   <.live_file_input upload={@uploads.avatar} />
-  <button type="submit">Upload</button>
+  <button type="submit" class="py-3 px-4 bg-black text-white rounded-md">Upload</button>
 </form>
 
 <%!-- use phx-drop-target with the upload ref to enable file drag and drop --%>

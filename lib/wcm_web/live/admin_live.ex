@@ -11,6 +11,9 @@ defmodule WcmWeb.AdminLive do
     changeset = Chapter.changeset(%Chapter{})
     page_changeset = Page.changeset(%Page{})
     id = String.to_integer(id_string)
+    # get the page with the highest value of the number field
+    next_page_number = Pages.get_next_page_no(id)
+
     socket =
       socket
         |> assign(:chapters, Chapters.list_chapters)
@@ -18,6 +21,7 @@ defmodule WcmWeb.AdminLive do
         |> assign(:form, to_form(changeset))
         |> assign(:page_form, to_form(page_changeset))
         |> assign(:current_chapter, id)
+        |> assign(:next_page_number, next_page_number)
     {:ok, assign(socket, chapters: Chapters.list_chapters, editing_chapter_id: nil)}
   end
 
@@ -29,10 +33,20 @@ defmodule WcmWeb.AdminLive do
   end
 
   def handle_info({:page_uploaded, _img}, socket) do
-    IO.puts("Page uploaded")
-    # Refresh the list of pages after an upload
     pages = Pages.list_pages(socket.assigns.current_chapter)
-    {:noreply, assign(socket, pages: pages)}
+    next_page_number = Pages.get_next_page_no(socket.assigns.current_chapter)
+    socket =
+      socket
+        |> assign(:pages, pages)
+        |> assign(:next_page_number, next_page_number)
+        |> put_flash(:info, "Page created successfully.")
+    {:noreply, socket}
+  end
+
+  def handle_info({:page_deleted, _page_id}, socket) do
+    pages = Pages.list_pages(socket.assigns.current_chapter)
+    next_page_number = Pages.get_next_page_no(socket.assigns.current_chapter)
+    {:noreply, assign(socket, pages: pages, next_page_number: next_page_number)}
   end
 
   def handle_event("submit", %{"chapter" => chapter_params}, socket) do

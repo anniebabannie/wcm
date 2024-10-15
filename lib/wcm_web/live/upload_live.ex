@@ -6,19 +6,22 @@ defmodule WcmWeb.UploadLive do
   alias Wcm.Pages
 
   @impl Phoenix.LiveView
-  @spec mount(any(), any(), map()) :: {:ok, Phoenix.LiveView.Socket.t()}
-  def mount(_params, %{"current_chapter" => current_chapter}, socket) do
+  def mount(_params, %{"current_chapter" => current_chapter, "next_page_number" => next_page_number}, socket) do
     {:ok,
     socket
     |> assign(:uploaded_files, [])
     |> assign(:current_chapter, current_chapter)
+    |> assign(:next_page_number, next_page_number)
     |> allow_upload(:avatar, accept: ~w(.jpg .jpeg .png .webp), max_entries: 2)}
   end
 
+  def handle_info({:next_page_number, next_page_number}, socket) do
+    {:noreply, assign(socket, next_page_number: next_page_number)}
+  end
+
   @impl Phoenix.LiveView
-  @spec handle_event(<<_::32, _::_*8>>, any(), any()) :: {:noreply, any()}
-  def handle_event("validate", _params, socket) do
-    {:noreply, socket}
+  def handle_event("validate", %{"next_page_number" => next_page_number}, socket) do
+    {:noreply, assign(socket, next_page_number: next_page_number)}
   end
 
   @impl Phoenix.LiveView
@@ -27,7 +30,7 @@ defmodule WcmWeb.UploadLive do
   end
 
   @impl Phoenix.LiveView
-  def handle_event("save", params, socket) do
+  def handle_event("save", %{"next_page_number" => next_page_number} = params, socket) do
     uploaded_files =
       consume_uploaded_entries(socket, :avatar, fn %{path: path}, entry ->
         {:ok, contents} = File.read(path)
@@ -44,9 +47,11 @@ defmodule WcmWeb.UploadLive do
         img = "https://fly.storage.tigris.dev/wcm-dev/" <> Path.basename(path) <> extension
         S3.put_object("wcm-dev", Path.basename(path) <> extension, contents, content_type: entry.client_type) |> ExAws.request!
 
-        case Pages.create_page(%{ img: img, chapter_id: socket.assigns[:current_chapter], number: 2}) do
+        case Pages.create_page(%{ img: img, chapter_id: socket.assigns[:current_chapter], number: next_page_number}) do
           {:ok, _} ->
+            next_page_number = Pages.get_next_page_no(socket.assigns.current_chapter)
             Phoenix.PubSub.broadcast(Wcm.PubSub, "page_uploaded", {:page_uploaded, img})
+            send(self(), {:next_page_number, next_page_number})
             {:ok, socket}
 
           {:error, changeset} ->

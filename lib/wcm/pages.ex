@@ -37,6 +37,19 @@ defmodule Wcm.Pages do
   """
   def get_page!(id), do: Repo.get!(Page, id)
 
+  def get_latest_page(chapter_id) do
+    Repo.one(from(p in Page, where: p.chapter_id == ^chapter_id, order_by: [desc: p.number], limit: 1))
+  end
+
+  def get_next_page_no(chapter_id) do
+    page = get_latest_page(chapter_id)
+    if page == nil do
+      1
+    else
+      page.number + 1
+    end
+  end
+
   @doc """
   Creates a page.
 
