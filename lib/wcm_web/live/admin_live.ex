@@ -28,10 +28,8 @@ defmodule WcmWeb.AdminLive do
   end
 
   def handle_event("submit", %{"chapter" => chapter_params}, socket) do
-    params = chapter_params
-      |> Map.put("user_id", socket.assigns.current_user.id)
 
-    case Chapters.create_chapter(params) do
+    case Chapters.create_chapter(chapter_params) do
       {:ok, chapter} ->
         socket =
           socket
@@ -71,6 +69,12 @@ defmodule WcmWeb.AdminLive do
             assign(:form, to_form(changeset))
         {:noreply, socket}
     end
+  end
+
+  def handle_event("delete_page", %{"page_id" => page_id}, socket) do
+    page = Pages.get_page!(String.to_integer(page_id))
+    Pages.delete_page(page)
+    {:noreply, assign(socket, pages: Pages.list_pages(socket.assigns.current_chapter))}
   end
 
 end
