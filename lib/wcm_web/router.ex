@@ -71,6 +71,7 @@ defmodule WcmWeb.Router do
       live "/users/settings/confirm_email/:token", UserSettingsLive, :confirm_email
 
       live "/admin/:id", AdminLive, container: { :div, class: "h-screen"}
+      live "/list", ListLive, container: { :div, class: "h-screen"}
 
       live "/pages", PageLive.Index, :index
       live "/pages/new", PageLive.Index, :new

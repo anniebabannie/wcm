@@ -11,6 +11,12 @@ module.exports = {
     "../lib/wcm_web.ex",
     "../lib/wcm_web/**/*.*ex"
   ],
+  safelist: [
+    'border-orange-300',
+    'border-green-300',
+    'bg-orange-700',
+    'bg-green-700',
+  ],
   theme: {
     extend: {
       colors: {
